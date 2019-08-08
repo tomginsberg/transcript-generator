@@ -56,7 +56,7 @@ if __name__ == '__main__':
     add_names = "names" in argv
     rows = []
 
-    with open("mydata.txt","r") as f:
+    with open("mydata.txt", "r") as f:
         raw_data = f.read()
 
     for line in tqdm(raw_data.split("\n")):
@@ -66,7 +66,8 @@ if __name__ == '__main__':
                 print(f"{values[0]} has no grade. Ignoring.")
             else:
                 if add_names:
-                    rows.append(f"\\thead{{{get_name(*values[0].split())}}}&{values[0]} & {values[2]} & {values[3]} & {values[7]} & {values[9]} \\\\ \\hline")
+                    rows.append(
+                        f"\\thead{{{get_name(*values[0].split())}}}&{values[0]} & {values[2]} & {values[3]} & {values[7]} & {values[9]} \\\\ \\hline")
                 else:
                     rows.append(f"{values[0]} & {values[2]} & {values[3]} & {values[7]} & {values[9]} \\\\ \\hline")
         except IndexError:
