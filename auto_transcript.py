@@ -4,11 +4,6 @@ from bs4 import BeautifulSoup
 import requests
 from tqdm import tqdm
 
-# Paste raw data here (copiable directly from ssc)
-raw_data = """ELEC 221	101	100	A+	2018W	1	BASC	3	4.0	71	
-MATH 220	102	50	F	2018W	1	BASC	3	3.0	58	
-"""
-
 
 def get_name(course: str, code: str) -> str:
     url = f"https://courses.students.ubc.ca/cs/courseschedule?pname=subjarea&tname=subj-course&dept={course}" \
@@ -60,6 +55,9 @@ if __name__ == '__main__':
     arg_len = len(argv)
     add_names = "names" in argv
     rows = []
+
+    with open("mydata.txt","r") as f:
+        raw_data = f.read()
 
     for line in tqdm(raw_data.split("\n")):
         values = line.split("\t")
