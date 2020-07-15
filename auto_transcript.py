@@ -1,8 +1,8 @@
-from sys import argv
 import subprocess
 from bs4 import BeautifulSoup
 import requests
 from tqdm import tqdm
+import argparse
 
 
 def get_name(course: str, code: str) -> str:
@@ -28,7 +28,8 @@ def get_name(course: str, code: str) -> str:
     return name
 
 
-raw_doc = lambda data, name, add_col: f"""\\documentclass{{article}}
+def raw_doc(data, name, add_col):
+    return f"""\\documentclass{{article}}
 \\usepackage[paper=letterpaper,left=20mm,right=20mm,top=3cm,bottom=2cm]{{geometry}}
 \\usepackage[utf8]{{inputenc}}
 \\usepackage{{fancyhdr}}
@@ -50,39 +51,48 @@ raw_doc = lambda data, name, add_col: f"""\\documentclass{{article}}
  \\end{{longtable}}
 \\end{{document}}"""
 
-if __name__ == '__main__':
-    next_arg = 1
-    arg_len = len(argv)
-    add_names = "names" in argv
+
+def generate_transcript(name, course_names, compile_pdf, data):
     rows = []
 
-    with open("mydata.txt", "r") as f:
+    with open(data, 'r') as f:
         raw_data = f.read()
 
-    for line in tqdm(raw_data.split("\n")):
-        values = line.split("\t")
+    for line in tqdm(raw_data.split('\n')):
+        values = line.split('\t')
         try:
-            if values[2].strip() == "":
-                print(f"{values[0]} has no grade. Ignoring.")
+            if values[2].strip() == '':
+                print(f'{values[0]} has no grade. Ignoring.')
             else:
-                if add_names:
+                if course_names:
                     rows.append(
-                        f"\\thead{{{get_name(*values[0].split())}}}&{values[0]} & {values[2]} & {values[3]} & {values[7]} & {values[9]} \\\\ \\hline")
+                        f'\\thead{{{get_name(*values[0].split())}}}&{values[0]} & {values[2]} & {values[3]} & {values[7]} & {values[9]} \\\\ \\hline')
                 else:
-                    rows.append(f"{values[0]} & {values[2]} & {values[3]} & {values[7]} & {values[9]} \\\\ \\hline")
+                    rows.append(f'{values[0]} & {values[2]} & {values[3]} & {values[7]} & {values[9]} \\\\ \\hline')
         except IndexError:
             print(f"Parse error in {line}. Ignoring.")
 
-    rd = raw_doc("\n".join(rows), argv[next_arg], add_names)
+    rd = raw_doc('\n'.join(rows), name, course_names)
 
-    next_arg += (1 + add_names)
-
-    with open("transcript.tex", "w") as f:
+    with open("transcript.tex", 'w') as f:
         f.write(rd)
 
-    if next_arg < arg_len and argv[next_arg] == "-compile":
-        subprocess.call(["pdflatex", "transcript.tex"])
-        subprocess.call(["rm", "transcript.log", "transcript.bbl", "transcript.blg", "transcript.aux"])
-        next_arg += 1
-        if next_arg < arg_len:
-            subprocess.call([argv[next_arg], "transcript.pdf"])
+    if compile_pdf:
+        subprocess.call(['pdflatex', 'transcript.tex'])
+        subprocess.call(['rm', 'transcript.log', 'transcript.aux'])
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--name', type=str, help='Your full name')
+    parser.add_argument('--data', type=str, default='mydata.txt',
+                        help='Path to the text file containing your grades copied directly from the ssc.'
+                             '\nDefaults to `mydata.txt`'
+                             '\nSee https://github.com/tomginsberg/transcript-generator for more instructions')
+    parser.add_argument('--compile', default=False, help='[flag] If passed compiles pdf with pdflatex',
+                        action='store_true')
+    parser.add_argument('--descriptive', default=False,
+                        help='[flag] If passed add a column of course names fetched from UBC course catalogue',
+                        action='store_true')
+    args = parser.parse_args()
+    generate_transcript(name=args.name, course_names=args.descriptive, compile_pdf=args.compile, data=args.data)
