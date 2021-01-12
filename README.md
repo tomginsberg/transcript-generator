@@ -15,9 +15,14 @@ MECH 500	501	50	F	5050W	1	BASC	3	3.0	50
 ```
 ###### Run
 ```
-python3 auto_transcript.py "Your Name" (names) (-compile) (open|start)
-```
-#### Optional arguments include 
-* `names` fetches course names from the web to create a more descriptive transcript. Warning this can be a bit slow ~*2min*.
-* `-compile` compiles the output file using `pdflatex`
-* `open` or `start` depending on unix/windows system respectively can be added after `-compile` to automatically open the generated pdf 
+usage: auto_transcript.py [-h] [--name NAME] [--data DATA] [--compile] [--descriptive]
+
+optional arguments:
+  -h, --help     show this help message and exit
+  --name NAME    Your full name
+  --data DATA    Path to the text file containing your grades copied directly from the ssc.
+                 Defaults to `mydata.txt` See https://github.com/tomginsberg/transcript-generator
+                 for more instructions
+  --compile      [flag] If passed compiles pdf with pdflatex
+  --descriptive  [flag] If passed add a column of course names fetched from UBC course catalogue
+  ```
